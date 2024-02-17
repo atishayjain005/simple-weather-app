@@ -197,7 +197,7 @@ export default function WeatherComp() {
             </div>
             <div className="flex items-center justify-center w-fit">
               <img
-                className="w-[30px]  md:w-[40px] lg:w-[60px] m-2 "
+                className="w-[30px] md:w-[40px] lg:w-[60px] m-2 "
                 src={Sunset}
                 alt=""
               />
