@@ -1,3 +1,4 @@
+import { temperature, cityTime } from "../weather";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -83,14 +84,9 @@ export default function WeatherComp() {
     month: "long",
     day: "numeric",
   };
-  const date = new Date(data.dt * 1000 + data.timezone * 1000);
-  const sunriseTime = new Date(
-    data?.sys?.sunrise * 1000 + data.timezone * 1000
-  );
-  const sunsetTime = new Date(data?.sys?.sunset * 1000 + data.timezone * 1000);
-  const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+  const formattedDate = cityTime(data.dt, data.timezone, dateOptions);
 
-  console.log(data);
+
 
   return (
     <div className="container mx-auto p-4 text-white min-h-screen flex justify-center items-center">
@@ -117,9 +113,7 @@ export default function WeatherComp() {
           </div>
           <div className="order-3 flex items-center lg:justify-start justify-center gap-4">
             <h1 className="text-8xl">
-              {toggle === true
-                ? Math.floor(data?.main?.temp - 273.15)
-                : Math.floor(data?.main?.temp - 459.67)}
+              {temperature(data?.main?.temp, toggle)}
             </h1>
             <div className="font-semibold flex flex-col gap-3 ">
               <p className="text-2xl cursor-pointer">
@@ -158,9 +152,7 @@ export default function WeatherComp() {
                 />
                 Feels like&nbsp;
                 <span className="font-semibold">
-                  {toggle === true
-                    ? Math.floor(data?.main?.feels_like - 273.15)
-                    : Math.floor(data?.main?.feels_like - 459.67)}
+                  {temperature(data?.main?.feels_like, toggle)}
                   °
                 </span>
               </p>
@@ -171,7 +163,7 @@ export default function WeatherComp() {
                   alt=""
                 />
                 Humidity&nbsp;
-                <span className="font-semibold">{data?.main?.humidity}</span>
+                <span className="font-semibold">{data?.main?.humidity}%</span>
               </p>
               <p className="flex flex-col lg:flex-row gap-2 items-center text-xs md:text-sm">
                 <img
@@ -180,7 +172,7 @@ export default function WeatherComp() {
                   alt=""
                 />
                 Wind speed&nbsp;
-                <span className="font-semibold">{data?.wind?.speed}</span>
+                <span className="font-semibold">{data?.wind?.speed} m/s</span>
               </p>
             </div>
           </div>
@@ -194,7 +186,7 @@ export default function WeatherComp() {
               <div className="p-2">
                 <h4 className="row-span-1 order-2">Sunrise</h4>
                 <p className="row-span-1 order-3">
-                  {sunriseTime.toLocaleTimeString("it-IT")}
+                  {cityTime(data?.sys?.sunrise, data.timezone)}
                 </p>
               </div>
             </div>
@@ -206,7 +198,7 @@ export default function WeatherComp() {
               />
               <div className="p-2">
                 <h4>Sunset</h4>
-                <p>{sunsetTime.toLocaleTimeString("it-IT")}</p>
+                <p>{cityTime(data?.sys?.sunset, data.timezone)}</p>
               </div>
             </div>
             <div className="flex items-center justify-center w-fit">
@@ -218,9 +210,7 @@ export default function WeatherComp() {
               <div className="p-2">
                 <h4>Max-temp.</h4>
                 <p>
-                  {toggle === true
-                    ? Math.floor(data?.main?.temp_max - 273.15)
-                    : Math.floor(data?.main?.temp_max - 459.67)}
+                  {temperature(data?.main?.temp_max, toggle)}
                   °
                 </p>
               </div>
@@ -234,9 +224,7 @@ export default function WeatherComp() {
               <div className="p-2">
                 <h4>Min-temp.</h4>
                 <p>
-                  {toggle === true
-                    ? Math.floor(data?.main?.temp_min - 273.15)
-                    : Math.floor(data?.main?.temp_min - 459.67)}
+                  {temperature(data?.main?.temp_min, toggle)}
                   °
                 </p>
               </div>
