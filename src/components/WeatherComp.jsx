@@ -1,5 +1,5 @@
 import { temperature, cityTime } from "../weather";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 
 import Clear from "../assets/clear.png";
@@ -16,46 +16,55 @@ import TempLow from "../assets/temp_low.png";
 import TempHigh from "../assets/temp_high.png";
 
 export default function WeatherComp() {
-  const [data, setData] = useState({});
+  const [data, setData] = useState(null);
   const [location, setLocation] = useState("London");
   const [toggle, setToggle] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [weatherImg, setWeatherImg] = useState(Cloud);
+  const activeRequest = useRef(null);
 
-
-
-  const handleChange = (e) => {
-    setLocation(e.target.value);
-  };
-
-  const handleSearch = async (city = location) => {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}`;
+  const handleSearch = useCallback(async (city) => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setIsLoading(false);
+    setError("");
+    const query = city.trim();
+    if (!query) { setError("Enter a city name to search."); return; }
+    const key = import.meta.env.VITE_OPENWEATHER_API_KEY;
+    if (!key) { setError("Weather search is not configured. Please try again later."); return; }
+    setIsLoading(true);
     try {
-      const response = await axios.get(url);
+      const response = await axios.get("https://api.openweathermap.org/data/2.5/weather", {
+        params: { q: query, appid: key }, signal: controller.signal, timeout: 10000,
+      });
+      if (controller.signal.aborted) return;
+      if (!response.data?.weather?.[0]?.description || !Number.isFinite(response.data?.main?.temp)) {
+        throw new Error("Incomplete weather response");
+      }
       setData(response.data);
-
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Error fetching weather data: ", error);
+    } catch (failure) {
+      if (controller.signal.aborted) return;
+      const status = failure.response?.status;
+      setError(status === 404 ? "City not found. Check the spelling or add a country code." :
+        status === 401 ? "Weather service configuration needs attention. Please try again later." :
+        status === 429 ? "Weather service is busy. Wait a moment and try again." :
+        "Unable to load weather. Check your connection and try again.");
+    } finally {
+      if (activeRequest.current === controller) setIsLoading(false);
     }
-  };
-
-  const handleToggle = () => {
-    setToggle(!toggle);
-  };
-
-  useEffect(() => {
-    // The initial city is independent of subsequent input edits.
-    const url = "https://api.openweathermap.org/data/2.5/weather";
-    axios.get(url, { params: { q: "London", appid: import.meta.env.VITE_OPENWEATHER_API_KEY } })
-      .then(response => { setData(response.data); setIsLoading(false); })
-      .catch(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
-    if (data.weather) {
+    handleSearch("London");
+    return () => activeRequest.current?.abort();
+  }, [handleSearch]);
+
+  const handleToggle = () => setToggle(!toggle);
+
+  useEffect(() => {
+    if (data?.weather) {
       switch (data?.weather[0]?.main) {
         case "Clear":
           setWeatherImg(Clear);
@@ -84,32 +93,30 @@ export default function WeatherComp() {
     month: "long",
     day: "numeric",
   };
-  const formattedDate = cityTime(data.dt, data.timezone, dateOptions);
+  const formattedDate = cityTime(data?.dt, data?.timezone, dateOptions);
 
 
 
   return (
-    <div className="container mx-auto p-4 text-white min-h-screen flex justify-center items-center">
-      {!isLoading ? (
+    <div className="container mx-auto p-4 text-white min-h-screen flex flex-col justify-center items-center gap-4">
+      <div className="w-full lg:w-5/6 bg-blue-950 rounded-2xl p-4">
+        <div className="flex h-12">
+          <input className="bg-white/10 w-full rounded-l-lg p-3" type="text" placeholder="Enter city name"
+            value={location} onChange={(event) => setLocation(event.target.value)}
+            onKeyDown={(event) => event.key === "Enter" && handleSearch(location)} />
+          <button className="bg-white/10 rounded-r-lg p-3" onClick={() => handleSearch(location)}>
+            <img src={Search} alt="Search" />
+          </button>
+        </div>
+        {isLoading && <p role="status">Loading weather…</p>}
+        {error && <p role="alert">{error}</p>}
+        {data && (error || isLoading) && <p>Showing the previous result for {data.name}.</p>}
+      </div>
+      {data ? (
         <div className="grid grid-cols-1  lg:grid-cols-2 bg-blue-950 p-6 md:p-10 lg:p-12 rounded-[24px] w-full lg:w-5/6 shadow-2xl gap-6">
           <div className="order-2 lg:order-1 text-center lg:text-start">
             <h1 className="text-5xl font-semibold">{data?.name}</h1>
             <p className="py-2 px-1 text-sm">{formattedDate}</p>
-          </div>
-          <div className="flex order-1 lg:order-2  h-12">
-            <input
-              className="bg-white/10 w-full  rounded-l-lg focus-visible:outline-none focus-visible:bg-white/5 p-3"
-              type="text"
-              placeholder="Enter city name"
-              onChange={handleChange}
-              onKeyDownCapture={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <button
-              className="bg-white/10 text-blue-950 rounded-r-lg hover:opacity-70  p-3"
-              onClick={() => handleSearch()}
-            >
-              <img src={Search} alt="" />
-            </button>
           </div>
           <div className="order-3 flex items-center lg:justify-start justify-center gap-4">
             <h1 className="text-8xl">
@@ -232,7 +239,7 @@ export default function WeatherComp() {
           </div>
         </div>
       ) : (
-        <div>Loading</div>
+        <p className="text-blue-950">Search for a city to see its current weather.</p>
       )}
     </div>
   );
