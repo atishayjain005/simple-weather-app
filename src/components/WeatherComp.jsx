@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 import Clear from "../assets/clear.png";
@@ -21,15 +21,14 @@ export default function WeatherComp() {
   const [isLoading, setIsLoading] = useState(true);
   const [weatherImg, setWeatherImg] = useState(Cloud);
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${
-    import.meta.env.VITE_OPENWEATHER_API_KEY
-  }`;
+
 
   const handleChange = (e) => {
     setLocation(e.target.value);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (city = location) => {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}`;
     try {
       const response = await axios.get(url);
       setData(response.data);
@@ -47,7 +46,11 @@ export default function WeatherComp() {
   };
 
   useEffect(() => {
-    handleSearch();
+    // The initial city is independent of subsequent input edits.
+    const url = "https://api.openweathermap.org/data/2.5/weather";
+    axios.get(url, { params: { q: "London", appid: import.meta.env.VITE_OPENWEATHER_API_KEY } })
+      .then(response => { setData(response.data); setIsLoading(false); })
+      .catch(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -107,7 +110,7 @@ export default function WeatherComp() {
             />
             <button
               className="bg-white/10 text-blue-950 rounded-r-lg hover:opacity-70  p-3"
-              onClick={handleSearch}
+              onClick={() => handleSearch()}
             >
               <img src={Search} alt="" />
             </button>
