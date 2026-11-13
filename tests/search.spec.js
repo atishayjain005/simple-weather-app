@@ -47,3 +47,17 @@ test('latest request wins when responses arrive out of order', async ({page}) =>
   release();
   await expect(page.getByRole('heading',{name:'Slow',exact:true})).toHaveCount(0);
 });
+
+test('unit controls support keyboard selection without toggling the current unit', async ({page}) => {
+  await page.route('https://api.openweathermap.org/**', route => route.fulfill({json:weather}));
+  await page.goto('/');
+  await expect(page.getByLabel('Temperature 0 degrees Celsius', {exact:true})).toBeVisible();
+  const celsius=page.getByRole('button',{name:'Celsius',exact:true});
+  const fahrenheit=page.getByRole('button',{name:'Fahrenheit',exact:true});
+  await celsius.press('Enter');
+  await expect(celsius).toHaveAttribute('aria-pressed','true');
+  await fahrenheit.press('Space');
+  await expect(page.getByLabel('Temperature 32 degrees Fahrenheit',{exact:true})).toBeVisible();
+  await expect(fahrenheit).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('textbox',{name:'City name'})).toBeVisible();
+});

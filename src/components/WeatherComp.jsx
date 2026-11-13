@@ -61,7 +61,6 @@ export default function WeatherComp() {
     return () => activeRequest.current?.abort();
   }, [handleSearch]);
 
-  const handleToggle = () => setToggle(!toggle);
 
   useEffect(() => {
     if (data?.weather) {
@@ -100,14 +99,14 @@ export default function WeatherComp() {
   return (
     <div className="container mx-auto p-4 text-white min-h-screen flex flex-col justify-center items-center gap-4">
       <div className="w-full lg:w-5/6 bg-blue-950 rounded-2xl p-4">
-        <div className="flex h-12">
-          <input className="bg-white/10 w-full rounded-l-lg p-3" type="text" placeholder="Enter city name"
-            value={location} onChange={(event) => setLocation(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && handleSearch(location)} />
-          <button className="bg-white/10 rounded-r-lg p-3" onClick={() => handleSearch(location)}>
-            <img src={Search} alt="Search" />
+        <form className="flex h-12" role="search" onSubmit={(event) => { event.preventDefault(); handleSearch(location); }}>
+          <label className="sr-only" htmlFor="city-search">City name</label>
+          <input id="city-search" className="bg-white/10 w-full rounded-l-lg p-3" type="text" placeholder="Enter city name"
+            value={location} onChange={(event) => setLocation(event.target.value)} />
+          <button type="submit" aria-label="Search weather" className="bg-white/10 rounded-r-lg p-3">
+            <img src={Search} alt="" />
           </button>
-        </div>
+        </form>
         {isLoading && <p role="status">Loading weather…</p>}
         {error && <p role="alert">{error}</p>}
         {data && (error || isLoading) && <p>Showing the previous result for {data.name}.</p>}
@@ -119,29 +118,17 @@ export default function WeatherComp() {
             <p className="py-2 px-1 text-sm">{formattedDate}</p>
           </div>
           <div className="order-3 flex items-center lg:justify-start justify-center gap-4">
-            <h1 className="text-8xl">
+            <p className="text-8xl" aria-label={`Temperature ${temperature(data?.main?.temp, toggle)} degrees ${toggle ? "Celsius" : "Fahrenheit"}`}>
               {temperature(data?.main?.temp, toggle)}
-            </h1>
+            </p>
             <div className="font-semibold flex flex-col gap-3 ">
-              <p className="text-2xl cursor-pointer">
-                <span
-                  className={`${
-                    toggle ? "text-white" : "text-white/50"
-                  } cursor-pointer`}
-                  onClick={handleToggle}
-                >
-                  °C
-                </span>{" "}
-                |{" "}
-                <span
-                  onClick={handleToggle}
-                  className={`${
-                    !toggle ? "text-white" : "text-white/50"
-                  } cursor-pointer`}
-                >
-                  °F
-                </span>
-              </p>
+              <div className="text-2xl flex gap-2" role="group" aria-label="Temperature unit">
+                <button type="button" aria-label="Celsius" aria-pressed={toggle}
+                  onClick={() => setToggle(true)} className={toggle ? "text-white" : "text-white/60"}>°C</button>
+                <span aria-hidden="true">|</span>
+                <button type="button" aria-label="Fahrenheit" aria-pressed={!toggle}
+                  onClick={() => setToggle(false)} className={!toggle ? "text-white" : "text-white/60"}>°F</button>
+              </div>
               <p>
                 {data.weather[0].description.charAt(0).toLocaleUpperCase() +
                   data.weather[0].description.slice(1)}
@@ -149,7 +136,7 @@ export default function WeatherComp() {
             </div>
           </div>
           <div className="order-4 flex flex-col lg:flex-row gap-8 items-center justify-end ">
-            <img src={weatherImg} alt="cloudy" className="max-w-[200px]" />
+            <img src={weatherImg} alt="" className="max-w-[200px]" />
             <div className="flex lg:flex-col gap-6 lg:gap-4 justify-between">
               <p className="flex flex-col lg:flex-row gap-2 items-center text-xs md:text-sm">
                 <img
