@@ -1,4 +1,3 @@
-import { useState } from "react";
 import WeatherComp from "./components/WeatherComp";
 
 function App() {

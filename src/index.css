@@ -21,3 +21,8 @@ body {
 }
 
 
+
+button:focus-visible, input:focus-visible {
+  outline: 3px solid #fde047;
+  outline-offset: 3px;
+}
