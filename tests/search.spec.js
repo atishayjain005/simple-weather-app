@@ -61,3 +61,13 @@ test('unit controls support keyboard selection without toggling the current unit
   await expect(fahrenheit).toHaveAttribute('aria-pressed','true');
   await expect(page.getByRole('textbox',{name:'City name'})).toBeVisible();
 });
+
+test('long city names and temperatures fit narrow screens', async ({page}) => {
+  await page.route('https://api.openweathermap.org/**', route => route.fulfill({json:{...weather,name:'A very long city name for layout verification', main:{...weather.main,temp:173.15}}}));
+  await page.goto('/');
+  await expect(page.getByRole('heading',{name:'A very long city name for layout verification'})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('button',{name:'Fahrenheit',exact:true}).click();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({path:`test-results/layout-${test.info().project.name}.png`,fullPage:true});
+});

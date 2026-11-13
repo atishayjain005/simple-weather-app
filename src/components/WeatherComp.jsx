@@ -101,7 +101,7 @@ export default function WeatherComp() {
       <div className="w-full lg:w-5/6 bg-blue-950 rounded-2xl p-4">
         <form className="flex h-12" role="search" onSubmit={(event) => { event.preventDefault(); handleSearch(location); }}>
           <label className="sr-only" htmlFor="city-search">City name</label>
-          <input id="city-search" className="bg-white/10 w-full rounded-l-lg p-3" type="text" placeholder="Enter city name"
+          <input id="city-search" className="bg-white/10 min-w-0 w-full rounded-l-lg p-3" type="text" placeholder="Enter city name"
             value={location} onChange={(event) => setLocation(event.target.value)} />
           <button type="submit" aria-label="Search weather" className="bg-white/10 rounded-r-lg p-3">
             <img src={Search} alt="" />
@@ -114,11 +114,11 @@ export default function WeatherComp() {
       {data ? (
         <div className="grid grid-cols-1  lg:grid-cols-2 bg-blue-950 p-6 md:p-10 lg:p-12 rounded-[24px] w-full lg:w-5/6 shadow-2xl gap-6">
           <div className="order-2 lg:order-1 text-center lg:text-start">
-            <h1 className="text-5xl font-semibold">{data?.name}</h1>
+            <h1 className="text-3xl sm:text-5xl font-semibold break-words">{data?.name}</h1>
             <p className="py-2 px-1 text-sm">{formattedDate}</p>
           </div>
-          <div className="order-3 flex items-center lg:justify-start justify-center gap-4">
-            <p className="text-8xl" aria-label={`Temperature ${temperature(data?.main?.temp, toggle)} degrees ${toggle ? "Celsius" : "Fahrenheit"}`}>
+          <div className="order-3 flex flex-wrap items-center lg:justify-start justify-center gap-4">
+            <p className="text-6xl sm:text-8xl" aria-label={`Temperature ${temperature(data?.main?.temp, toggle)} degrees ${toggle ? "Celsius" : "Fahrenheit"}`}>
               {temperature(data?.main?.temp, toggle)}
             </p>
             <div className="font-semibold flex flex-col gap-3 ">
@@ -170,7 +170,7 @@ export default function WeatherComp() {
               </p>
             </div>
           </div>
-          <div className="order-5 lg:col-span-2 md:flex grid grid-cols-2 gap-2 justify-between lg:justify-around text-[10px] md:text-sm font-semibold bg-white/10 mt-5 rounded-[24px] p-6">
+          <div className="order-5 lg:col-span-2 md:flex grid grid-cols-1 sm:grid-cols-2 gap-2 justify-between lg:justify-around text-[10px] md:text-sm font-semibold bg-white/10 mt-5 rounded-[24px] p-6">
             <div className="flex items-center justify-center w-fit">
               <img
                 className="w-[30px]  md:w-[40px] lg:w-[60px] m-2 "

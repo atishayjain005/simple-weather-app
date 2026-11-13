@@ -12,3 +12,5 @@ Repository: atishayjain005/simple-weather-app. No prior issues or PRs found. Las
 | No configured public host | Identify an existing free host after credential rotation | Public review URL | Small | Credential exposure | Backlog | Required; no subscriptions |
 
 No approval requests or auto-approvals. Safe, reversible scope only. Work in progress on codex/daily-weather-reliability.
+
+Continuation, 13 November 2026 IST: implemented labeled native search, explicit keyboard-accessible unit selection, focus indicators, meaningful temperature labels, and long-city/negative-temperature responsive layouts. Added desktop and 320px regression coverage and actual setup/credential/deployment documentation. These complete the two previously recorded UI tasks rather than introduce a new product direction. No approval requests, deadlines or auto-approvals. Hosting and historical credential rotation remain Backlog. Remaining dependency advisories need a separately validated build-tool migration; do not apply force upgrades as part of this scope.
